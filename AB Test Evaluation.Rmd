@@ -1,0 +1,262 @@
+---
+title: 'Business Statistics Mid-Term Assessment IB94X0 2024-2025 #1'
+author: '9999999'
+output:
+  html_document:
+    toc: yes
+    toc_depth: 3
+editor_options: 
+  chunk_output_type: console
+---
+
+In this analysis, we examine data from a randomized A/B test conducted by a consumer lending company to evaluate the effectiveness of a new AI-assisted loan approval model compared to the existing system.The goal is to improve loan officer decision-making by:
+
+Reducing Type I errors (false positives): Incorrectly rejecting good loans.
+Reducing Type II errors (false negatives): Incorrectly approving bad loans.
+Maximizing profitability by increasing approvals for good loans while minimizing bad loan approvals.
+
+A randomized A/B test was conducted where loan officers were assigned to:
+
+Control Group: Used the existing AI model for loan approvals.
+Treatment Group: Used the new AI model for loan approvals.
+
+The company hypothesizes that the new model will improve decision accuracy, reducing financial losses and increasing overall efficiency.
+
+# 1.Data dictionary
+
+| Variable | Description |
+|----|----|
+| variant | Experimental variant assigned to each loan officer (Control or Treatment) |
+| loanofficer_id | Unique identifier for each loan officer |
+| day | The day of the experiment (e.g., 1 = 1st day, 2 = 2nd day, etc.) |
+| typeI_init | Number of Type I errors (false positives – rejecting good loans) before seeing computer predictions |
+| typeI_fin | Number of Type I errors (false positives – rejecting good loans) after seeing computer predictions |
+| typeII_init | Number of Type II errors (false negatives – approving bad loans) before seeing computer predictions |
+| typeII_fin | Number of Type II errors (false negatives – approving bad loans) after seeing computer predictions |
+| ai_typeI | Number of Type I errors made by the computer model |
+| ai_typeII | Number of Type II errors made by the computer model |
+| badloans_num | Number of bad loans (loans that defaulted) |
+| goodloans_num | Number of good loans (loans that were paid back on time) |
+| agree_init | Number of times a loan officer agreed with the computer model before seeing predictions |
+| agree_fin | Number of times a loan officer agreed with the computer model after seeing predictions |
+| conflict_init | Number of times a loan officer disagreed (conflicted) with the computer model before seeing predictions |
+| conflict_fin | Number of times a loan officer disagreed (conflicted) with the computer model after seeing predictions |
+| revised_per_ai | Number of decisions revised to match the computer model’s prediction |
+| revised_agst_ai | Number of decisions revised against the computer model’s prediction |
+| confidence_init_total | Sum of confidence ratings given by each loan officer for their loan reviews before seeing computer predictions |
+| confidence_fin_total | Sum of confidence ratings given by each loan officer for their loan reviews after seeing computer predictions |
+| complt_init | Number of initial loan reviews completed before seeing computer predictions |
+| complt_fin | Number of final loan reviews completed after seeing computer predictions |
+| fully_complt | Number of fully completed loan reviews (both before and after seeing predictions) |
+
+# Step 1:Data prep
+
+```{r}
+library(dplyr)
+
+# Load dataset 
+df <- read.csv("ADAproject_-5_data.csv", header = TRUE, stringsAsFactors = FALSE)
+
+# View first few rows
+head(df)
+
+#Check for missing values
+colSums(is.na(df))
+```
+
+```{r}
+#Set categorical variable
+df$Variant <- factor(df$Variant)
+
+```
+
+```{r}
+# Check Outliers
+library(ggplot2)
+library(gridExtra)
+grid.arrange(
+  ggplot(df, aes(x = Variant, y = typeI_fin, fill = Variant)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Final TypeI error",
+       x = "Variant",
+       y = "Final TypeI error"),
+  ggplot(df, aes(x = Variant, y = typeII_fin, fill = Variant)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Final TypeII error",
+       x = "Variant",
+       y = "Final TypeII error"))
+
+grid.arrange(
+  ggplot(df, aes(x = Variant, y = agree_init, fill = Variant)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Intial Agreement",
+       x = "Variant",
+       y = "Initial Agreement"),
+  ggplot(df, aes(x = Variant, y = agree_fin, fill = Variant)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Final Agreement",
+       x = "Variant",
+       y = "Final Agreement"),
+  ggplot(df, aes(x = Variant, y = conflict_init, fill = Variant)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Initial Conflict",
+       x = "Variant",
+       y = "Initial Conflict"),
+  ggplot(df, aes(x = Variant, y = conflict_fin, fill = Variant)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Final Conflict",
+       x = "Variant",
+       y = "Final Conflict"),
+  ggplot(df, aes(x = Variant, y = confidence_init_total, fill = Variant)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Initial Confidence",
+       x = "Variant",
+       y = "Initial Confidence"),
+  ggplot(df, aes(x = Variant, y = confidence_fin_total, fill = Variant)) +
+  geom_boxplot() +
+  labs(title = "Distribution of Final Confidence",
+       x = "Variant",
+       y = "Final Confidence"))
+```
+
+Since each loan officer has multiple transactions, we need to summarise key metrics per loan officer.
+```{r}
+# Compute key metric changes
+df <- df %>%
+  mutate(
+    change_agree = agree_fin - agree_init,
+    change_conflict = conflict_fin - conflict_init,
+    change_confidence = confidence_fin_total - confidence_init_total,
+  )
+
+
+# Aggregate results by experimental variant (Control vs Treatment)
+loan_officer_summary <- df %>%
+  group_by(Variant, loanofficer_id) %>%
+  summarise(
+    total_loans_completed = sum(complt_fin, na.rm = TRUE),
+    typeI_error_rate = sum(typeI_fin, na.rm = TRUE) / total_loans_completed,
+    typeII_error_rate = sum(typeII_fin, na.rm = TRUE) / total_loans_completed,
+    change_agree_per_officer = mean(change_agree),
+    change_conflict_per_officer = mean(change_conflict),
+    change_confidence_per_officer = mean(change_confidence),
+    .groups = "drop"
+  )
+
+# Delete the NA rows
+loan_officer_summary <- loan_officer_summary %>%
+  mutate(typeI_error_rate = ifelse(total_loans_completed == 0, NA, typeI_error_rate),
+         typeII_error_rate = ifelse(total_loans_completed == 0, NA, typeII_error_rate))
+loan_officer_summary <- loan_officer_summary %>%
+  filter(!is.na(typeII_error_rate))
+
+# Create a bar chart showing the count of each Variant
+ggplot(loan_officer_summary, aes(x = Variant, fill = Variant)) +
+  geom_bar() + 
+  labs(title = "Number of Loan Officers per Group",
+       x = "Variant",
+       y = "Count")
+```
+
+# Step 2. Data Analysis: Hypothesis Testing
+Type I OEC (Overall Evaluation Criterion) = Type I Error rate per officer (sum(typeI_fin) / sum(complt_fin))
+This OEC measures the percentage of rejecting good loans by each officer.
+
+Type II OEC= Type II Error rate per officer (sum(typeII_fin) / sum(complt_fin))
+This OEC measures the percentage of approving bad loans by each officer.
+
+We examine if there is a significant difference between the Control and Treatment groups.
+```{r}
+loan_officer_summary <- loan_officer_summary %>%
+  mutate(
+    OEC_TypeI = typeI_error_rate,  # Lower is better (fewer probability rejecting good loans)
+    OEC_TypeII = typeII_error_rate  # Lower is better (fewer probability approving bad loans)
+  )
+```
+
+## 2.1 Run Welch two-sample t-tests to examine if there's sig. difference between Variants
+```{r}
+# Run independent t-tests for OEC_TypeI and OEC_TypeII
+t_test_typeI <- t.test(OEC_TypeI ~ Variant, data = loan_officer_summary, var.equal = TRUE)
+t_test_typeII <- t.test(OEC_TypeII ~ Variant, data = loan_officer_summary, var.equal = TRUE)
+
+# Print results
+print(t_test_typeI)
+print(t_test_typeII)
+```
+
+For OEC_TypeI, p-value (7.987e-06) is much lower than 0.001, meaning we reject the null hypothesis.The new AI model significantly reduces Type I errors rate (lower probability good loans are being rejected).
+Loan officers using the new model (Treatment) had a much lower Type I error rate (0.200) compared to those using the old model (Control) (0.363),CI[0.099,0.226].
+
+For OEC_TypeII, p-value (2.998e-05) is much lower than 0.001, meaning we reject the null hypothesis.The new AI model significantly reduces Type II errors rate (lower probability bad loans are being approved).
+Loan officers using the new model (Treatment) had a much lower Type II error rate (0.083) compared to those using the old model (Control) (0.121),CI[0.022,0.055].
+
+```{r}
+# Run independent t-tests for other key metric changes
+t_test_agree <- t.test(change_agree_per_officer ~ Variant, data = loan_officer_summary, var.equal = FALSE)
+t_test_conflict <- t.test(change_conflict_per_officer ~ Variant, data = loan_officer_summary, var.equal = FALSE)
+t_test_confidence <- t.test(change_confidence_per_officer ~ Variant, data = loan_officer_summary, var.equal = FALSE)
+
+# Print test results
+print(t_test_agree)
+print(t_test_conflict)
+print(t_test_confidence)
+```
+
+For agreement difference, p<0.05,CI[-1.209, -0.282], we reject the null hypothesis and conclude that the treatment group(1.386) significantly increased the change in agreement per officer compared to the control group(0.640). The treatment appears to have positively influenced agreement levels.Loan officers using the new model revised their decisions to agree with the model more often than those using the old model.
+
+For conflict difference, the p-value (0.006) is less than 0.05, meaning there is a statistically significant difference between the two groups.The confidence interval does not include zero (0.210 to 1.167), reinforcing that the difference is likely real.The treatment group has a lower mean (-1.029) compared to the control group (-0.340), indicating that conflict among loan officers decreased more in the treatment group. Conflict decreased more under the treatment model, suggesting it provides clearer guidance to loan officers.
+
+For confidence difference, since p = 0.3426 > 0.05, there is no strong evidence that the treatment had a significant impact on confidence change per officer compared to the control group.
+
+# Step 3. Data Analysis: Compute Difference in OEC between Variants
+```{r}
+# Compute mean OEC for Control and Treatment
+mean_OEC_each_Variant <- loan_officer_summary %>%
+  group_by(Variant) %>%
+  summarise(mean_OEC_TypeI = mean(OEC_TypeI, na.rm = TRUE),
+            mean_OEC_TypeII = mean(OEC_TypeII, na.rm = TRUE)
+            )  
+
+print(mean_OEC_each_Variant)
+
+# Compute difference in each OEC between Treatment and Control
+pairwise_diff <- mean_OEC_each_Variant %>%
+  summarise(
+    Diff_T_C_typeI = mean_OEC_TypeI[Variant == "Treatment"] - mean_OEC_TypeI[Variant == "Control"],
+    Perc_T_C_typeI = (Diff_T_C_typeI / mean_OEC_TypeI[Variant == "Control"]) * 100,
+    Diff_T_C_typeII = mean_OEC_TypeII[Variant == "Treatment"] - mean_OEC_TypeII[Variant == "Control"],
+    Perc_T_C_typeII= (Diff_T_C_typeII / mean_OEC_TypeII[Variant == "Control"]) * 100,
+  )
+
+# View the result
+print(pairwise_diff)
+```
+
+Treatment (new computer model) significantly reduced (p < 0.001) TypeI Error rate compared to Control
+(existing computer model) by 44.9%.
+
+Treatment (new computer model) significantly reduced (p < 0.001) TypeII Error rate compared to
+Control (existing computer model) by 31.7%.
+
+# Step 4. Data Analysis: Compute & Interpret Effect Size
+```{r}
+library(effectsize)
+
+Control_TypeI = loan_officer_summary$OEC_TypeI[loan_officer_summary$Variant == "Control"]
+Treatment_TypeI = loan_officer_summary$OEC_TypeI[loan_officer_summary$Variant == "Treatment"]
+Control_TypeII = loan_officer_summary$OEC_TypeII[loan_officer_summary$Variant == "Control"]
+Treatment_TypeII = loan_officer_summary$OEC_TypeII[loan_officer_summary$Variant == "Treatment"]
+
+# Compute Cohen's d
+cohens_d(Control_TypeI, Treatment_TypeI)
+cohens_d(Control_TypeII, Treatment_TypeII)
+```
+
+```{r}
+# Interpreting Effect Sizes:
+effectsize::interpret_cohens_d(1.92)
+effectsize::interpret_cohens_d(1.76)
+```
+
+---
