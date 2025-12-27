@@ -1,69 +1,35 @@
-## AI-driven Loan Approval A/B test evaluation
+## Strategic Evaluation of an AI-Driven Credit Risk Model
+---
 
-#### Project Overview
-This project analyses the results of a 10-day A/B test conducted at a consumer lending company to evaluate whether a new AI-assisted loan approval model improves loan officers’ decision quality compared to the existing system.
+### 1. Recovering Lost Revenue from Rejected Applicants
 
-The goal was to determine if the new model:
-* Reduces financial risk
-* Improves approval accuracy
-* Should be deployed at scale
+#### What I found:
+The AI model significantly reduced cases where creditworthy applicants were wrongly rejected, approving nearly 45% more “good” customers than the existing system.
 
-#### Business Problem
-Loan officers were producing high error rates, leading to:
-* Lost revenue from rejecting good applicants (Type I errors)
-* Financial losses from approving risky applicants (Type II errors)
-A new AI model was introduced, and an A/B test was run to measure whether it meaningfully improves decision-making over the current system
+#### Why it mattered:
+This showed clear revenue upside without increasing customer acquisition costs. For a growing startup, this highlighted a practical way to scale the loan book by capturing customers who were previously being turned away despite being low risk.
 
-#### Experiment Design
-* Control group: Loan officers using the existing AI model
-* Treatment group: Loan officers using the new AI model
-* Randomisation unit: Loan officer (to prevent spillover effects)
-* Duration: 10 days
-* Key outcomes measured:
-  - Type I error rate
-  - Type II error rate
-  - Agreement with AI recommendations
-  - Conflict with AI recommendations
-  - Decision confidence
- 
-#### Data Preparation & Feature Engineering
-* Dataset was pre-cleaned, with no major missing or duplicate values detected.
-* Zero-value anomalies were handled carefully to avoid bias between control and treatment groups.
-* Key engineered variables included:
-  - Change in agreement with AI
-  - Change in conflict with AI
-  - Change in confidence after AI assistance
-* Created error rates per loan officer to fairly compare performance across groups.
+### 2. Reducing Financial Risk and Loan Defaults
 
-#### Analysis Methods
-* Aggregated performance at the loan officer level
-* Used Welch’s two-sample t-tests to compare:
-  - Type I error rates
-  - Type II error rates
-* Calculated:
-  - Overall Evaluation Criteria (OEC)
-  - Net improvement
-  - Effect size (Cohen’s d) for practical significance
-* Visualised group differences using ggplot2
+#### What I found:
+The AI model also approved far fewer high-risk loans, cutting bad approvals by around 32% compared to the legacy process.
 
-#### Key Results
-* Type I errors reduced by ~45% in the Treatment group
-* Type II errors reduced by ~32% in the Treatment group
-* Loan officers showed:
-  - Higher agreement with AI
-  - Lower conflict with AI
-* Large effect sizes confirmed that the results were not only statistically significant but also practically meaningful.
+#### Why it mattered:
+This demonstrated that the model could meaningfully reduce default risk and protect capital. The findings helped frame how AI could improve portfolio health and support long-term sustainability, which is especially important for maintaining investor confidence.
 
-#### Business Interpretation
-The new AI model:
-  - Approves more creditworthy customers
-  - Reduces approval of high-risk loans
-  - Improves decision consistency
-  - Lowers overall financial risk
-This supports the model’s value as a decision-support tool, not just a prediction system
+### 3. Evaluating How Humans Actually Use AI Recommendations
 
-#### Recommendations
-* Extend the experiment duration (2–4 weeks) to stabilise confidence intervals
-* Increase the number of loan officers to improve statistical power
-* Consider a refined hybrid system (AI + rule-based thresholds) before full automation
-* Run a follow-up A/B test using updated economic indicators
+#### What I found:
+Loan officers followed AI recommendations more closely over time, even though their personal confidence levels did not increase.
+
+#### Why it mattered:
+This surfaced an important behavioural insight: while the AI was influencing decisions, trust in the system had not fully developed. This pointed to the need for better training or explainability, ensuring the technology is integrated thoughtfully rather than blindly adopted.
+
+### 4. Deciding Whether the Model Was Ready to Launch
+
+#### What I found:
+Although early results were promising, the data showed high variability due to the short testing window.
+
+#### Why it mattered:
+Instead of pushing for immediate rollout, I recommended extending the experiment by a few weeks. This helped avoid premature decisions based on unstable trends and demonstrated a risk-aware approach to deploying AI in a live business environment.
+
