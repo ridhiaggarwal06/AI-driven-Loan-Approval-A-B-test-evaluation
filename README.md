@@ -3,7 +3,7 @@
 
 ### 1. Recovering Lost Revenue from Rejected Applicants
 
-#### What I found:
+#### Finding:
 The AI model significantly reduced cases where creditworthy applicants were wrongly rejected, approving nearly 45% more “good” customers than the existing system.
 
 #### Why it mattered:
@@ -11,7 +11,7 @@ This showed clear revenue upside without increasing customer acquisition costs. 
 
 ### 2. Reducing Financial Risk and Loan Defaults
 
-#### What I found:
+#### Finding:
 The AI model also approved far fewer high-risk loans, cutting bad approvals by around 32% compared to the legacy process.
 
 #### Why it mattered:
@@ -19,7 +19,7 @@ This demonstrated that the model could meaningfully reduce default risk and prot
 
 ### 3. Evaluating How Humans Actually Use AI Recommendations
 
-#### What I found:
+#### Finding:
 Loan officers followed AI recommendations more closely over time, even though their personal confidence levels did not increase.
 
 #### Why it mattered:
@@ -27,7 +27,7 @@ This surfaced an important behavioural insight: while the AI was influencing dec
 
 ### 4. Deciding Whether the Model Was Ready to Launch
 
-#### What I found:
+#### Finding:
 Although early results were promising, the data showed high variability due to the short testing window.
 
 #### Why it mattered:
