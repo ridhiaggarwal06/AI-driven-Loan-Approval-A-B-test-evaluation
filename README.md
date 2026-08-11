@@ -1,8 +1,9 @@
 ## Strategic Evaluation of an AI-Driven Credit Risk Model
+
 ---
 
 A lending company's existing AI-assisted loan approval model was producing high error rates, creating both missed revenue (rejecting good applicants) and financial risk (approving bad ones). A new model was developed, and a randomized A/B test was run across loan officers over 10 days to determine whether it genuinely improved decision-making, and whether the company should proceed to full rollout.
---- 
+
 ## Methodology:
 
 ### Experimental Design
@@ -24,8 +25,9 @@ Since the comparison involved exactly two groups (Control vs. Treatment), **Welc
 To go beyond statistical significance and assess whether the differences were *practically* meaningful, **Cohen's d** was calculated for both error-rate reductions — both came out large (d = 1.92 and 1.76), indicating the effect wasn't just detectable, but substantial.
 
 ### Why This Mattered
+
 A p-value alone tells you a difference likely isn't chance — it doesn't tell you whether that difference is big enough to act on. Pairing significance testing with effect size, and explicitly checking test assumptions (unequal group sizes, unequal variances) rather than defaulting to the standard test, was central to making a rollout-or-wait recommendation the business could actually trust.
----
+
 
 ### 1. Impact: Fewer Creditworthy Applicants Wrongly Rejected
 
@@ -34,7 +36,7 @@ The AI model significantly reduced cases where creditworthy applicants were wron
 
 #### Why it mattered:
 This showed clear revenue upside without increasing customer acquisition costs. For a growing startup, this highlighted a practical way to scale the loan book by capturing customers who were previously being turned away despite being low risk.
---- 
+
 
 ### 2. Impact: Fewer High-Risk Loans Approved
 
@@ -43,7 +45,6 @@ The AI model also approved far fewer high-risk loans, cutting bad approvals by a
 
 #### Why it mattered:
 This demonstrated that the model could meaningfully reduce default risk and protect capital. The findings helped frame how AI could improve portfolio health and support long-term sustainability, which is especially important for maintaining investor confidence.
----
 
 ### 3. Behavioral Insight: How Officers Actually Used AI Recommendations
 
@@ -52,7 +53,7 @@ Loan officers followed AI recommendations more closely over time, even though th
 
 #### Why it mattered:
 This surfaced an important behavioral insight: while the AI was influencing decisions, trust in the system had not fully developed. This pointed to the need for better training or explainability, ensuring the technology is integrated thoughtfully rather than blindly adopted.
----
+
 
 ### 4. Recommendation: Was the Model Ready to Launch?
 
